@@ -1,0 +1,93 @@
+order_id,order_date,product,sku,category,quantity,unit_price,revenue,region,sales_rep
+ORD-10001,2025-01-02,Wireless Noise-Cancelling Headphones,SKU-ELEC-001,Electronics,1,189.99,189.99,North America,Sarah Mitchell
+ORD-10002,2025-01-02,Yoga Mat Premium,SKU-SPRT-012,Sports & Fitness,2,49.99,99.98,Europe,James Okafor
+ORD-10003,2025-01-02,Stainless Steel Water Bottle,SKU-HOME-034,Home & Kitchen,3,24.99,74.97,North America,Sarah Mitchell
+ORD-10004,2025-01-03,Running Shoes - Men's,SKU-SPRT-007,Sports & Fitness,1,129.99,129.99,Asia Pacific,Lin Wei
+ORD-10005,2025-01-03,Smart Watch Series 5,SKU-ELEC-008,Electronics,1,349.99,349.99,North America,Carlos Rivera
+ORD-10006,2025-01-03,Organic Cotton T-Shirt,SKU-APRL-021,Apparel,4,29.99,119.96,Europe,James Okafor
+ORD-10007,2025-01-04,Portable Bluetooth Speaker,SKU-ELEC-015,Electronics,1,79.99,79.99,North America,Sarah Mitchell
+ORD-10008,2025-01-04,Cast Iron Skillet 12",SKU-HOME-009,Home & Kitchen,1,59.99,59.99,North America,Carlos Rivera
+ORD-10009,2025-01-04,Resistance Band Set,SKU-SPRT-019,Sports & Fitness,2,34.99,69.98,Asia Pacific,Lin Wei
+ORD-10010,2025-01-05,Leather Wallet - Bifold,SKU-ACCS-003,Accessories,1,44.99,44.99,Europe,James Okafor
+ORD-10011,2025-01-05,Wireless Noise-Cancelling Headphones,SKU-ELEC-001,Electronics,2,189.99,379.98,North America,Carlos Rivera
+ORD-10012,2025-01-05,Ceramic Coffee Mug Set,SKU-HOME-041,Home & Kitchen,1,39.99,39.99,North America,Sarah Mitchell
+ORD-10013,2025-01-06,Smart Watch Series 5,SKU-ELEC-008,Electronics,1,349.99,349.99,Europe,James Okafor
+ORD-10014,2025-01-06,Running Shoes - Women's,SKU-SPRT-008,Sports & Fitness,1,119.99,119.99,North America,Carlos Rivera
+ORD-10015,2025-01-06,Vitamin D3 Supplements,SKU-HLTH-005,Health & Beauty,3,19.99,59.97,North America,Sarah Mitchell
+ORD-10016,2025-01-07,Noise-Cancelling Earbuds Pro,SKU-ELEC-022,Electronics,1,149.99,149.99,Asia Pacific,Lin Wei
+ORD-10017,2025-01-07,Bamboo Cutting Board Set,SKU-HOME-027,Home & Kitchen,1,34.99,34.99,Europe,James Okafor
+ORD-10018,2025-01-07,Denim Jacket - Classic,SKU-APRL-014,Apparel,1,89.99,89.99,North America,Carlos Rivera
+ORD-10019,2025-01-08,Portable Bluetooth Speaker,SKU-ELEC-015,Electronics,2,79.99,159.98,North America,Sarah Mitchell
+ORD-10020,2025-01-08,Foam Roller Pro,SKU-SPRT-031,Sports & Fitness,1,29.99,29.99,Europe,James Okafor
+ORD-10021,2025-01-08,Moisturizing Face Cream,SKU-HLTH-012,Health & Beauty,2,39.99,79.98,Asia Pacific,Lin Wei
+ORD-10022,2025-01-09,Smart Watch Series 5,SKU-ELEC-008,Electronics,1,349.99,349.99,North America,Carlos Rivera
+ORD-10023,2025-01-09,Stainless Steel Water Bottle,SKU-HOME-034,Home & Kitchen,2,24.99,49.98,North America,Sarah Mitchell
+ORD-10024,2025-01-09,Yoga Mat Premium,SKU-SPRT-012,Sports & Fitness,1,49.99,49.99,Europe,James Okafor
+ORD-10025,2025-01-10,Wireless Charging Pad,SKU-ELEC-033,Electronics,1,39.99,39.99,North America,Carlos Rivera
+ORD-10026,2025-01-10,Running Shoes - Men's,SKU-SPRT-007,Sports & Fitness,2,129.99,259.98,Asia Pacific,Lin Wei
+ORD-10027,2025-01-10,Silk Pillowcase Set,SKU-HOME-056,Home & Kitchen,1,54.99,54.99,Europe,James Okafor
+ORD-10028,2025-01-11,Noise-Cancelling Earbuds Pro,SKU-ELEC-022,Electronics,1,149.99,149.99,North America,Sarah Mitchell
+ORD-10029,2025-01-11,Compression Leggings,SKU-SPRT-024,Sports & Fitness,2,59.99,119.98,North America,Carlos Rivera
+ORD-10030,2025-01-11,Sunscreen SPF 50,SKU-HLTH-019,Health & Beauty,3,22.99,68.97,Asia Pacific,Lin Wei
+ORD-10031,2025-01-12,Smart Watch Series 5,SKU-ELEC-008,Electronics,2,349.99,699.98,North America,Carlos Rivera
+ORD-10032,2025-01-12,Ceramic Coffee Mug Set,SKU-HOME-041,Home & Kitchen,2,39.99,79.98,Europe,James Okafor
+ORD-10033,2025-01-12,Organic Cotton T-Shirt,SKU-APRL-021,Apparel,3,29.99,89.97,North America,Sarah Mitchell
+ORD-10034,2025-01-13,Wireless Noise-Cancelling Headphones,SKU-ELEC-001,Electronics,1,189.99,189.99,Asia Pacific,Lin Wei
+ORD-10035,2025-01-13,Foam Roller Pro,SKU-SPRT-031,Sports & Fitness,2,29.99,59.98,North America,Carlos Rivera
+ORD-10036,2025-01-13,Bamboo Cutting Board Set,SKU-HOME-027,Home & Kitchen,2,34.99,69.98,Europe,James Okafor
+ORD-10037,2025-01-14,Portable Bluetooth Speaker,SKU-ELEC-015,Electronics,1,79.99,79.99,North America,Sarah Mitchell
+ORD-10038,2025-01-14,Running Shoes - Women's,SKU-SPRT-008,Sports & Fitness,1,119.99,119.99,North America,Carlos Rivera
+ORD-10039,2025-01-14,Vitamin D3 Supplements,SKU-HLTH-005,Health & Beauty,4,19.99,79.96,Asia Pacific,Lin Wei
+ORD-10040,2025-01-15,Smart Watch Series 5,SKU-ELEC-008,Electronics,1,349.99,349.99,Europe,James Okafor
+ORD-10041,2025-01-15,Leather Wallet - Bifold,SKU-ACCS-003,Accessories,2,44.99,89.98,North America,Carlos Rivera
+ORD-10042,2025-01-15,Stainless Steel Water Bottle,SKU-HOME-034,Home & Kitchen,4,24.99,99.96,North America,Sarah Mitchell
+ORD-10043,2025-01-16,Noise-Cancelling Earbuds Pro,SKU-ELEC-022,Electronics,2,149.99,299.98,North America,Carlos Rivera
+ORD-10044,2025-01-16,Yoga Mat Premium,SKU-SPRT-012,Sports & Fitness,3,49.99,149.97,Europe,James Okafor
+ORD-10045,2025-01-16,Moisturizing Face Cream,SKU-HLTH-012,Health & Beauty,1,39.99,39.99,Asia Pacific,Lin Wei
+ORD-10046,2025-01-17,Wireless Charging Pad,SKU-ELEC-033,Electronics,2,39.99,79.98,North America,Sarah Mitchell
+ORD-10047,2025-01-17,Cast Iron Skillet 12",SKU-HOME-009,Home & Kitchen,1,59.99,59.99,North America,Carlos Rivera
+ORD-10048,2025-01-17,Denim Jacket - Classic,SKU-APRL-014,Apparel,1,89.99,89.99,Europe,James Okafor
+ORD-10049,2025-01-18,Wireless Noise-Cancelling Headphones,SKU-ELEC-001,Electronics,1,189.99,189.99,Asia Pacific,Lin Wei
+ORD-10050,2025-01-18,Resistance Band Set,SKU-SPRT-019,Sports & Fitness,3,34.99,104.97,North America,Sarah Mitchell
+ORD-10051,2025-01-18,Silk Pillowcase Set,SKU-HOME-056,Home & Kitchen,2,54.99,109.98,North America,Carlos Rivera
+ORD-10052,2025-01-19,Smart Watch Series 5,SKU-ELEC-008,Electronics,1,349.99,349.99,Europe,James Okafor
+ORD-10053,2025-01-19,Running Shoes - Men's,SKU-SPRT-007,Sports & Fitness,1,129.99,129.99,North America,Sarah Mitchell
+ORD-10054,2025-01-19,Sunscreen SPF 50,SKU-HLTH-019,Health & Beauty,2,22.99,45.98,Asia Pacific,Lin Wei
+ORD-10055,2025-01-20,Portable Bluetooth Speaker,SKU-ELEC-015,Electronics,3,79.99,239.97,North America,Carlos Rivera
+ORD-10056,2025-01-20,Compression Leggings,SKU-SPRT-024,Sports & Fitness,1,59.99,59.99,Europe,James Okafor
+ORD-10057,2025-01-20,Ceramic Coffee Mug Set,SKU-HOME-041,Home & Kitchen,3,39.99,119.97,North America,Sarah Mitchell
+ORD-10058,2025-01-21,Noise-Cancelling Earbuds Pro,SKU-ELEC-022,Electronics,1,149.99,149.99,North America,Carlos Rivera
+ORD-10059,2025-01-21,Yoga Mat Premium,SKU-SPRT-012,Sports & Fitness,2,49.99,99.98,Asia Pacific,Lin Wei
+ORD-10060,2025-01-21,Leather Wallet - Bifold,SKU-ACCS-003,Accessories,3,44.99,134.97,Europe,James Okafor
+ORD-10061,2025-01-22,Smart Watch Series 5,SKU-ELEC-008,Electronics,2,349.99,699.98,North America,Carlos Rivera
+ORD-10062,2025-01-22,Bamboo Cutting Board Set,SKU-HOME-027,Home & Kitchen,1,34.99,34.99,North America,Sarah Mitchell
+ORD-10063,2025-01-22,Organic Cotton T-Shirt,SKU-APRL-021,Apparel,5,29.99,149.95,Europe,James Okafor
+ORD-10064,2025-01-23,Wireless Charging Pad,SKU-ELEC-033,Electronics,3,39.99,119.97,North America,Carlos Rivera
+ORD-10065,2025-01-23,Running Shoes - Women's,SKU-SPRT-008,Sports & Fitness,2,119.99,239.98,Asia Pacific,Lin Wei
+ORD-10066,2025-01-23,Moisturizing Face Cream,SKU-HLTH-012,Health & Beauty,3,39.99,119.97,North America,Sarah Mitchell
+ORD-10067,2025-01-24,Wireless Noise-Cancelling Headphones,SKU-ELEC-001,Electronics,2,189.99,379.98,Europe,James Okafor
+ORD-10068,2025-01-24,Foam Roller Pro,SKU-SPRT-031,Sports & Fitness,1,29.99,29.99,North America,Carlos Rivera
+ORD-10069,2025-01-24,Stainless Steel Water Bottle,SKU-HOME-034,Home & Kitchen,5,24.99,124.95,North America,Sarah Mitchell
+ORD-10070,2025-01-25,Smart Watch Series 5,SKU-ELEC-008,Electronics,1,349.99,349.99,Asia Pacific,Lin Wei
+ORD-10071,2025-01-25,Resistance Band Set,SKU-SPRT-019,Sports & Fitness,2,34.99,69.98,North America,Carlos Rivera
+ORD-10072,2025-01-25,Cast Iron Skillet 12",SKU-HOME-009,Home & Kitchen,2,59.99,119.98,Europe,James Okafor
+ORD-10073,2025-01-26,Noise-Cancelling Earbuds Pro,SKU-ELEC-022,Electronics,1,149.99,149.99,North America,Sarah Mitchell
+ORD-10074,2025-01-26,Denim Jacket - Classic,SKU-APRL-014,Apparel,2,89.99,179.98,North America,Carlos Rivera
+ORD-10075,2025-01-26,Vitamin D3 Supplements,SKU-HLTH-005,Health & Beauty,5,19.99,99.95,Asia Pacific,Lin Wei
+ORD-10076,2025-01-27,Smart Watch Series 5,SKU-ELEC-008,Electronics,3,349.99,1049.97,North America,Carlos Rivera
+ORD-10077,2025-01-27,Yoga Mat Premium,SKU-SPRT-012,Sports & Fitness,1,49.99,49.99,Europe,James Okafor
+ORD-10078,2025-01-27,Silk Pillowcase Set,SKU-HOME-056,Home & Kitchen,1,54.99,54.99,North America,Sarah Mitchell
+ORD-10079,2025-01-28,Portable Bluetooth Speaker,SKU-ELEC-015,Electronics,2,79.99,159.98,Asia Pacific,Lin Wei
+ORD-10080,2025-01-28,Compression Leggings,SKU-SPRT-024,Sports & Fitness,3,59.99,179.97,North America,Carlos Rivera
+ORD-10081,2025-01-28,Ceramic Coffee Mug Set,SKU-HOME-041,Home & Kitchen,1,39.99,39.99,Europe,James Okafor
+ORD-10082,2025-01-29,Wireless Noise-Cancelling Headphones,SKU-ELEC-001,Electronics,1,189.99,189.99,North America,Sarah Mitchell
+ORD-10083,2025-01-29,Running Shoes - Men's,SKU-SPRT-007,Sports & Fitness,2,129.99,259.98,North America,Carlos Rivera
+ORD-10084,2025-01-29,Sunscreen SPF 50,SKU-HLTH-019,Health & Beauty,2,22.99,45.98,Asia Pacific,Lin Wei
+ORD-10085,2025-01-30,Smart Watch Series 5,SKU-ELEC-008,Electronics,2,349.99,699.98,Europe,James Okafor
+ORD-10086,2025-01-30,Leather Wallet - Bifold,SKU-ACCS-003,Accessories,1,44.99,44.99,North America,Carlos Rivera
+ORD-10087,2025-01-30,Bamboo Cutting Board Set,SKU-HOME-027,Home & Kitchen,3,34.99,104.97,North America,Sarah Mitchell
+ORD-10088,2025-01-31,Wireless Charging Pad,SKU-ELEC-033,Electronics,1,39.99,39.99,Asia Pacific,Lin Wei
+ORD-10089,2025-01-31,Resistance Band Set,SKU-SPRT-019,Sports & Fitness,4,34.99,139.96,North America,Carlos Rivera
+ORD-10090,2025-01-31,Organic Cotton T-Shirt,SKU-APRL-021,Apparel,6,29.99,179.94,Europe,James Okafor
+ORD-10091,2025-01-31,Moisturizing Face Cream,SKU-HLTH-012,Health & Beauty,2,39.99,79.98,North America,Sarah Mitchell
+ORD-10092,2025-01-31,Noise-Cancelling Earbuds Pro,SKU-ELEC-022,Electronics,1,149.99,149.99,North America,Carlos Rivera

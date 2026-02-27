@@ -1,0 +1,25 @@
+date,product,revenue,quantity,region,rep
+2025-01-03,Starter Plan,15000,120,North,Alice
+2025-01-15,Growth Plan,28000,180,South,Marco
+2025-02-02,Starter Plan,17000,130,North,Alice
+2025-02-10,Enterprise Plan,42000,40,West,Lina
+2025-03-05,Growth Plan,31000,185,East,Marco
+2025-03-18,Starter Plan,19000,140,North,Alice
+2025-04-07,Enterprise Plan,46000,42,West,Lina
+2025-04-20,Data Add-on,9000,80,East,Noah
+2025-05-06,Growth Plan,34000,192,South,Marco
+2025-05-22,Starter Plan,21000,155,North,Alice
+2025-06-04,Enterprise Plan,48000,45,West,Lina
+2025-06-21,Data Add-on,11000,89,East,Noah
+2025-07-09,Growth Plan,36000,204,South,Marco
+2025-07-25,Starter Plan,23000,168,North,Alice
+2025-08-03,Enterprise Plan,50000,47,West,Lina
+2025-08-19,Data Add-on,12000,94,East,Noah
+2025-09-08,Growth Plan,38000,212,South,Marco
+2025-09-24,Starter Plan,25000,176,North,Alice
+2025-10-06,Enterprise Plan,54000,50,West,Lina
+2025-10-20,Data Add-on,13000,97,East,Noah
+2025-11-07,Growth Plan,39000,218,South,Marco
+2025-11-26,Starter Plan,26000,182,North,Alice
+2025-12-05,Enterprise Plan,56000,52,West,Lina
+2025-12-18,Data Add-on,15000,103,East,Noah

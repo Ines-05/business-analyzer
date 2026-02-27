@@ -1,0 +1,103 @@
+{
+  "selection": {
+    "min_score": 50.0,
+    "max_charts": 5,
+    "evaluated": 8,
+    "eligible_after_threshold": 7,
+    "selected_for_render": 5
+  },
+  "data_quality": {
+    "score": 80.1,
+    "grade": "B",
+    "component_scores": {
+      "completeness": 98.7,
+      "valid_dates": 90.9,
+      "row_volume": 5.5,
+      "variance": 100.0,
+      "outliers": 77.2
+    },
+    "notes": []
+  },
+  "generated": [
+    {
+      "id": "quantity",
+      "path": "E:/Analysis/.codex/skills/business-analyzer/.tmp\\chart_quantity.png",
+      "title": "Units Sold by Product",
+      "score": 75.6,
+      "selection_reason": "Quantity data available for 6 products",
+      "details": {
+        "product_count": 6
+      }
+    },
+    {
+      "id": "trend",
+      "path": "E:/Analysis/.codex/skills/business-analyzer/.tmp\\chart_trend.png",
+      "title": "Revenue Trend",
+      "score": 74.8,
+      "selection_reason": "10 periods, date validity 90.9%",
+      "details": {
+        "period_count": 10,
+        "date_valid_pct": 90.9
+      }
+    },
+    {
+      "id": "region",
+      "path": "E:/Analysis/.codex/skills/business-analyzer/.tmp\\chart_region.png",
+      "title": "Revenue by Region",
+      "score": 66.9,
+      "selection_reason": "5 regions available",
+      "details": {
+        "region_count": 5
+      }
+    },
+    {
+      "id": "category",
+      "path": "E:/Analysis/.codex/skills/business-analyzer/.tmp\\chart_category.png",
+      "title": "Revenue by Category",
+      "score": 65.5,
+      "selection_reason": "5 distinct categories",
+      "details": {
+        "category_count": 5
+      }
+    },
+    {
+      "id": "rep",
+      "path": "E:/Analysis/.codex/skills/business-analyzer/.tmp\\chart_rep.png",
+      "title": "Revenue by Sales Rep",
+      "score": 64.1,
+      "selection_reason": "5 reps available",
+      "details": {
+        "rep_count": 5
+      }
+    }
+  ],
+  "skipped": [
+    {
+      "id": "share",
+      "reason": "Score 38.1 below threshold 50.0. 6 slices, concentration acceptable",
+      "score": 38.1,
+      "details": {
+        "product_count": 6,
+        "top_share_pct": 83.0
+      }
+    },
+    {
+      "id": "daily",
+      "reason": "Eligible but not selected: lower score than top 5 charts.",
+      "score": 59.4,
+      "details": {
+        "point_count": 10,
+        "granularity": "day"
+      }
+    },
+    {
+      "id": "products",
+      "reason": "Eligible but not selected: lower score than top 5 charts.",
+      "score": 57.0,
+      "details": {
+        "product_count": 6,
+        "top_share_pct": 83.0
+      }
+    }
+  ]
+}

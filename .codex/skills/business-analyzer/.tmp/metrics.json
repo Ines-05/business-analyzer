@@ -1,0 +1,391 @@
+{
+  "kpis": {
+    "total_revenue": 120550.0,
+    "total_orders": 11,
+    "avg_order_value": 10959.09,
+    "period_growth_pct": 1900.0,
+    "top_product": {
+      "product": "Omega",
+      "revenue": 100000.0,
+      "share_pct": 83.0
+    }
+  },
+  "revenue_trend": [
+    {
+      "period": "2025-01-01",
+      "revenue": 1200.0
+    },
+    {
+      "period": "2025-01-02",
+      "revenue": 1400.0
+    },
+    {
+      "period": "2025-01-03",
+      "revenue": 800.0
+    },
+    {
+      "period": "2025-01-04",
+      "revenue": 950.0
+    },
+    {
+      "period": "2025-01-05",
+      "revenue": 4200.0
+    },
+    {
+      "period": "2025-01-06",
+      "revenue": 3900.0
+    },
+    {
+      "period": "2025-01-07",
+      "revenue": 1100.0
+    },
+    {
+      "period": "2025-01-08",
+      "revenue": 1300.0
+    },
+    {
+      "period": "2025-01-10",
+      "revenue": 5000.0
+    },
+    {
+      "period": "2025-01-11",
+      "revenue": 100000.0
+    }
+  ],
+  "top_products": [
+    {
+      "product": "Omega",
+      "revenue": 100000.0,
+      "share_pct": 83.0
+    },
+    {
+      "product": "Gamma",
+      "revenue": 8100.0,
+      "share_pct": 6.7
+    },
+    {
+      "product": "Alpha",
+      "revenue": 7600.0,
+      "share_pct": 6.3
+    },
+    {
+      "product": "Delta",
+      "revenue": 2400.0,
+      "share_pct": 2.0
+    },
+    {
+      "product": "Beta",
+      "revenue": 1750.0,
+      "share_pct": 1.5
+    },
+    {
+      "product": "Epsilon",
+      "revenue": 700.0,
+      "share_pct": 0.6
+    }
+  ],
+  "product_share": [
+    {
+      "name": "Omega",
+      "value": 83.0
+    },
+    {
+      "name": "Gamma",
+      "value": 6.7
+    },
+    {
+      "name": "Alpha",
+      "value": 6.3
+    },
+    {
+      "name": "Delta",
+      "value": 2.0
+    },
+    {
+      "name": "Beta",
+      "value": 1.5
+    },
+    {
+      "name": "Epsilon",
+      "value": 0.6
+    }
+  ],
+  "by_region": [
+    {
+      "region": "Global",
+      "revenue": 100000.0,
+      "share_pct": 83.0
+    },
+    {
+      "region": "East",
+      "revenue": 8100.0,
+      "share_pct": 6.7
+    },
+    {
+      "region": "North",
+      "revenue": 7600.0,
+      "share_pct": 6.3
+    },
+    {
+      "region": "West",
+      "revenue": 3100.0,
+      "share_pct": 2.6
+    },
+    {
+      "region": "South",
+      "revenue": 1750.0,
+      "share_pct": 1.5
+    }
+  ],
+  "by_rep": [
+    {
+      "rep": "Erin",
+      "revenue": 100000.0,
+      "share_pct": 83.0
+    },
+    {
+      "rep": "Carla",
+      "revenue": 8100.0,
+      "share_pct": 6.7
+    },
+    {
+      "rep": "Alice",
+      "revenue": 7600.0,
+      "share_pct": 6.3
+    },
+    {
+      "rep": "Dan",
+      "revenue": 3100.0,
+      "share_pct": 2.6
+    },
+    {
+      "rep": "Bob",
+      "revenue": 1750.0,
+      "share_pct": 1.5
+    }
+  ],
+  "by_quantity": [
+    {
+      "product": "Alpha",
+      "quantity": 11.0
+    },
+    {
+      "product": "Omega",
+      "quantity": 10.0
+    },
+    {
+      "product": "Gamma",
+      "quantity": 9.0
+    },
+    {
+      "product": "Delta",
+      "quantity": 5.0
+    },
+    {
+      "product": "Beta",
+      "quantity": 3.0
+    },
+    {
+      "product": "Epsilon",
+      "quantity": 1.0
+    }
+  ],
+  "by_category": [
+    {
+      "category": "Enterprise",
+      "revenue": 100000.0,
+      "share_pct": 83.0
+    },
+    {
+      "category": "Hardware",
+      "revenue": 10000.0,
+      "share_pct": 8.3
+    },
+    {
+      "category": "Services",
+      "revenue": 8100.0,
+      "share_pct": 6.7
+    },
+    {
+      "category": "Software",
+      "revenue": 1750.0,
+      "share_pct": 1.5
+    },
+    {
+      "category": "Accessories",
+      "revenue": 700.0,
+      "share_pct": 0.6
+    }
+  ],
+  "data_quality": {
+    "summary": {
+      "score": 80.1,
+      "grade": "B",
+      "component_scores": {
+        "completeness": 98.7,
+        "valid_dates": 90.9,
+        "row_volume": 5.5,
+        "variance": 100.0,
+        "outliers": 77.2
+      },
+      "notes": []
+    },
+    "completeness": {
+      "date": {
+        "column": "order_date",
+        "non_null": 10,
+        "total": 11,
+        "pct": 90.9
+      },
+      "revenue": {
+        "column": "revenue",
+        "non_null": 11,
+        "total": 11,
+        "pct": 100.0
+      },
+      "product": {
+        "column": "product",
+        "non_null": 11,
+        "total": 11,
+        "pct": 100.0
+      },
+      "category": {
+        "column": "category",
+        "non_null": 11,
+        "total": 11,
+        "pct": 100.0
+      },
+      "quantity": {
+        "column": "quantity",
+        "non_null": 11,
+        "total": 11,
+        "pct": 100.0
+      },
+      "region": {
+        "column": "region",
+        "non_null": 11,
+        "total": 11,
+        "pct": 100.0
+      },
+      "rep": {
+        "column": "rep",
+        "non_null": 11,
+        "total": 11,
+        "pct": 100.0
+      }
+    },
+    "variance": {
+      "revenue": {
+        "count": 11,
+        "mean": 10959.0909,
+        "std": 28195.8477,
+        "cv": 2.5728
+      },
+      "quantity": {
+        "count": 11,
+        "mean": 3.5455,
+        "std": 2.5357,
+        "cv": 0.7152
+      }
+    },
+    "cardinality": {
+      "date": {
+        "column": "order_date",
+        "unique": 10,
+        "non_null": 10,
+        "unique_ratio_pct": 100.0
+      },
+      "product": {
+        "column": "product",
+        "unique": 6,
+        "non_null": 11,
+        "unique_ratio_pct": 54.5
+      },
+      "category": {
+        "column": "category",
+        "unique": 5,
+        "non_null": 11,
+        "unique_ratio_pct": 45.5
+      },
+      "region": {
+        "column": "region",
+        "unique": 5,
+        "non_null": 11,
+        "unique_ratio_pct": 45.5
+      },
+      "rep": {
+        "column": "rep",
+        "unique": 5,
+        "non_null": 11,
+        "unique_ratio_pct": 45.5
+      }
+    },
+    "valid_dates": {
+      "present": true,
+      "valid": 10,
+      "invalid": 1,
+      "pct_valid": 90.9,
+      "granularity": "day"
+    },
+    "outliers": {
+      "revenue": {
+        "method": "iqr",
+        "count": 1,
+        "pct": 9.1,
+        "lower_bound": -3512.5,
+        "upper_bound": 8587.5
+      },
+      "quantity": {
+        "method": "iqr",
+        "count": 1,
+        "pct": 9.1,
+        "lower_bound": -1.75,
+        "upper_bound": 8.25
+      }
+    }
+  },
+  "recommendations": [
+    {
+      "priority": "High",
+      "icon": "alert",
+      "title": "Revenue concentration risk",
+      "insight": "Omega accounts for 83.0% of total revenue ($100,000). This concentration increases downside risk.",
+      "action": "Grow the next 2-3 products to reduce dependence on Omega. Target less than 40% share for any single product within 2 quarters."
+    },
+    {
+      "priority": "Low",
+      "icon": "idea",
+      "title": "Strong momentum: +1900.0% in 2025-01-11",
+      "insight": "Revenue grew from $5,000 to $100,000. Capture the drivers while momentum is strong.",
+      "action": "Document winning campaigns and replicate across the next sales cycle."
+    },
+    {
+      "priority": "Medium",
+      "icon": "warning",
+      "title": "Low-performing SKU: Epsilon",
+      "insight": "Epsilon contributes only 0.6% of revenue ($700).",
+      "action": "Review margin, pricing, and packaging strategy for this SKU."
+    },
+    {
+      "priority": "Medium",
+      "icon": "warning",
+      "title": "Average order value opportunity ($10,959)",
+      "insight": "AOV can likely be improved through bundling and structured upsell plays.",
+      "action": "Deploy bundles or tiered pricing and monitor AOV weekly."
+    }
+  ],
+  "meta": {
+    "date_range": {
+      "min": "2025-01-01",
+      "max": "2025-01-12"
+    },
+    "date_stats": {
+      "granularity": "day",
+      "valid_count": 11,
+      "invalid_count": 1,
+      "valid_pct": 91.7
+    },
+    "source_file": "sample_sales.csv",
+    "row_count": 11
+  }
+}
