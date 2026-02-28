@@ -1,0 +1,21 @@
+id,nom,prenom,email,poste,departement,telephone,date_embauche,salaire_annuel,budget_campagne,canal_principal,kpi_mensuel,leads_generes,taux_conversion,chiffre_affaires_mensuel,statut_client,pays,ville
+1,Dupont,Sophie,sophie.dupont@growthlab.io,CEO,Direction,+33 6 12 34 56 78,2019-03-15,95000,50000,SEO,Trafic organique,320,4.5,85000,Actif,France,Paris
+2,Martin,Julien,julien.martin@growthlab.io,CMO,Marketing,+33 6 23 45 67 89,2020-01-10,78000,120000,Paid Social,CPL,540,6.2,112000,Actif,France,Paris
+3,Bernard,Clara,clara.bernard@growthlab.io,Head of Content,Marketing,+33 6 34 56 78 90,2020-06-01,62000,30000,Blog/SEO,Trafic,210,3.8,45000,Actif,France,Lyon
+4,Leclerc,Thomas,thomas.leclerc@growthlab.io,Growth Hacker,Growth,+33 6 45 67 89 01,2021-02-20,58000,80000,Email,CTR,890,8.1,98000,Actif,France,Paris
+5,Petit,Emma,emma.petit@growthlab.io,Data Analyst,Tech,+33 6 56 78 90 12,2021-05-15,65000,0,N/A,Données,0,0,0,Actif,France,Bordeaux
+6,Moreau,Alexis,alexis.moreau@growthlab.io,Account Manager,Sales,+33 6 67 89 01 23,2020-09-01,55000,10000,LinkedIn,MQL,180,12.3,210000,Actif,France,Paris
+7,Simon,Lucie,lucie.simon@growthlab.io,Social Media Manager,Marketing,+33 6 78 90 12 34,2022-01-10,45000,25000,Instagram,Engagement,650,2.9,32000,Actif,France,Paris
+8,Laurent,Romain,romain.laurent@growthlab.io,SEO Specialist,Marketing,+33 6 89 01 23 45,2021-11-08,52000,15000,Google,Positionnement,420,5.7,67000,Actif,France,Nantes
+9,Michel,Inès,ines.michel@growthlab.io,Product Marketing,Produit,+33 6 90 12 34 56,2022-04-18,60000,40000,Webinar,SQL,95,15.8,145000,Actif,France,Paris
+10,Garcia,Hugo,hugo.garcia@growthlab.io,Copywriter,Marketing,+33 6 01 23 45 67,2022-07-01,42000,5000,Blog,Lecture,180,3.1,28000,Actif,France,Marseille
+11,Roux,Chloé,chloe.roux@growthlab.io,CRM Manager,Marketing,+33 6 11 22 33 44,2021-08-25,58000,35000,Email,Rétention,1200,9.4,87000,Actif,France,Paris
+12,David,Pierre,pierre.david@growthlab.io,Head of Sales,Sales,+33 6 22 33 44 55,2019-11-12,82000,20000,Cold Outreach,MRR,70,22.1,380000,Actif,France,Paris
+13,Fontaine,Marie,marie.fontaine@growthlab.io,UX Designer,Tech,+33 6 33 44 55 66,2022-09-05,56000,0,N/A,Conversion,0,0,0,Actif,France,Paris
+14,Chevalier,Kevin,kevin.chevalier@growthlab.io,Paid Ads Specialist,Marketing,+33 6 44 55 66 77,2021-03-15,54000,95000,Google Ads,ROAS,760,7.3,195000,Actif,France,Toulouse
+15,Leroy,Amandine,amandine.leroy@growthlab.io,Community Manager,Marketing,+33 6 55 66 77 88,2023-01-16,38000,8000,TikTok,Followers,980,1.8,15000,Actif,France,Paris
+16,Morel,Baptiste,baptiste.morel@growthlab.io,CFO,Finance,+33 6 66 77 88 99,2020-04-20,88000,0,N/A,ARR,0,0,0,Actif,France,Paris
+17,Robin,Sarah,sarah.robin@growthlab.io,Partnerships Manager,Business Dev,+33 6 77 88 99 00,2022-02-14,62000,15000,Événements,NPS,45,28.9,220000,Actif,France,Paris
+18,Blanc,Antoine,antoine.blanc@growthlab.io,Demand Gen Manager,Marketing,+33 6 88 99 00 11,2021-06-07,68000,110000,Multi-canal,Pipeline,310,10.2,275000,Actif,France,Paris
+19,Girard,Léa,lea.girard@growthlab.io,PR Manager,Communication,+33 6 99 00 11 22,2020-10-19,57000,20000,Presse/Media,Mentions,85,5.4,55000,Actif,France,Paris
+20,Bonnet,Maxime,maxime.bonnet@growthlab.io,DevOps,Tech,+33 6 10 20 30 40,2021-09-30,72000,0,N/A,Uptime,0,0,0,Actif,France,Paris

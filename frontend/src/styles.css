@@ -751,6 +751,12 @@ input {
   gap: 12px;
 }
 
+.upload-error {
+  margin: 12px 0 0;
+  color: var(--danger);
+  font-size: 13px;
+}
+
 .download-example-btn {
   display: flex;
   align-items: center;
@@ -821,6 +827,11 @@ input {
 .pipeline-step.done {
   background: #f4fdf8;
   border-color: #b8dfc9;
+}
+
+.pipeline-step.active {
+  border-color: #9ac3ff;
+  background: #f3f8ff;
 }
 
 .pipeline-check {

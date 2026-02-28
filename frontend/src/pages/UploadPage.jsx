@@ -1,13 +1,14 @@
-import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 
-import { analyzeFile } from "../api";
+import { analyzeFile, getAnalysisSteps } from "../api";
 
-const PIPELINE_STEPS = [
-  "Import des données",
-  "Nettoyage et validation",
-  "Calcul des indicateurs",
-  "Génération des graphiques",
-  "Recommandations IA",
+const DEFAULT_PIPELINE_STEPS = [
+  "Import du fichier et profilage des colonnes",
+  "Planification IA des graphiques",
+  "Calcul des metriques et KPIs",
+  "Preparation des donnees dashboard",
+  "Generation des graphiques",
+  "Generation des recommandations IA",
 ];
 
 const IconUploadArrow = () => (
@@ -67,30 +68,32 @@ const IconBarChart = () => (
   </svg>
 );
 
-function ProcessingView() {
+function ProcessingView({ steps = DEFAULT_PIPELINE_STEPS }) {
   const [doneCount, setDoneCount] = useState(0);
   const timerRef = useRef(null);
 
   useEffect(() => {
+    const maxDone = Math.max((steps || []).length - 1, 0);
     let count = 0;
     timerRef.current = setInterval(() => {
-      count += 1;
+      count = Math.min(count + 1, maxDone);
       setDoneCount(count);
-      if (count >= PIPELINE_STEPS.length) clearInterval(timerRef.current);
-    }, 650);
+      if (count >= maxDone) clearInterval(timerRef.current);
+    }, 1200);
     return () => clearInterval(timerRef.current);
-  }, []);
+  }, [steps]);
 
   return (
     <div className="processing-view">
       <div className="processing-icon"><IconBarChart /></div>
       <h2 className="processing-title">Analyse en cours</h2>
-      <p className="processing-sub">Nous traitons vos données…</p>
+      <p className="processing-sub">Nous traitons vos donnÃ©esâ€¦</p>
       <div className="pipeline-steps">
-        {PIPELINE_STEPS.map((label, i) => {
+        {steps.map((label, i) => {
           const done = i < doneCount;
+          const active = !done && i === doneCount;
           return (
-            <div key={label} className={`pipeline-step ${done ? "done" : ""}`}>
+            <div key={label} className={`pipeline-step ${done ? "done" : ""} ${active ? "active" : ""}`}>
               <span className="pipeline-check">{done && <IconCheckLg />}</span>
               <span className="pipeline-label">{label}</span>
             </div>
@@ -114,6 +117,24 @@ export default function UploadPage({ onRefresh, onOpenDashboard }) {
   const [files, setFiles] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [dragging, setDragging] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const [pipelineSteps, setPipelineSteps] = useState(DEFAULT_PIPELINE_STEPS);
+
+  useEffect(() => {
+    let mounted = true;
+    getAnalysisSteps()
+      .then((payload) => {
+        if (!mounted) return;
+        const labels = (payload.items || [])
+          .map((item) => String(item.label || "").trim())
+          .filter(Boolean);
+        if (labels.length > 0) setPipelineSteps(labels);
+      })
+      .catch(() => {
+        // Keep frontend fallback when endpoint is not available.
+      });
+    return () => { mounted = false; };
+  }, []);
 
   function mergeFiles(nextFiles) {
     const map = new Map(files.map((item) => [fileKey(item), item]));
@@ -144,6 +165,7 @@ export default function UploadPage({ onRefresh, onOpenDashboard }) {
   async function runBatch() {
     if (!files.length || submitting) return;
     setSubmitting(true);
+    setSubmitError("");
 
     const batch = files.map((file, index) => ({
       id: `${fileKey(file)}-${index}`,
@@ -154,30 +176,33 @@ export default function UploadPage({ onRefresh, onOpenDashboard }) {
     }));
 
     const results = [];
+    const errors = [];
     for (const row of batch) {
       const file = files.find((item) => fileKey(item) === row.fileRef);
       if (!file) continue;
       try {
         const payload = await analyzeFile({ companyName: "", file });
         results.push(payload);
-      } catch {
-        // silently skip failed files
+      } catch (e) {
+        errors.push(`${file.name}: ${e.message || "analyse Ã©chouÃ©e"}`);
       }
     }
 
     await onRefresh();
     setSubmitting(false);
-    setFiles([]);
-    if (results.length) {
+    if (results.length > 0) {
+      setFiles([]);
       onOpenDashboard(results[results.length - 1].analysis_id);
+      return;
     }
+    if (errors.length > 0) setSubmitError(errors.join(" | "));
   }
 
   if (submitting) {
     return (
       <main className="upload-page">
         <section className="upload-shell">
-          <ProcessingView />
+          <ProcessingView steps={pipelineSteps} />
         </section>
       </main>
     );
@@ -186,8 +211,8 @@ export default function UploadPage({ onRefresh, onOpenDashboard }) {
   return (
     <main className="upload-page">
       <section className="upload-shell">
-        <h2>Importez vos données</h2>
-        <p>Chargez un ou plusieurs fichiers CSV / XLSX pour démarrer l&apos;analyse.</p>
+        <h2>Importez vos donnÃ©es</h2>
+        <p>Chargez un ou plusieurs fichiers CSV / XLSX pour dÃ©marrer l&apos;analyse.</p>
 
         <label
           className={`upload-dropzone ${dragging ? "active" : ""}`}
@@ -197,7 +222,7 @@ export default function UploadPage({ onRefresh, onOpenDashboard }) {
         >
           <div className="dropzone-icon"><IconUploadArrow /></div>
           <h3>Glissez vos fichiers ici</h3>
-          <p>ou cliquez pour sélectionner&nbsp;•&nbsp;CSV, XLSX</p>
+          <p>ou cliquez pour sÃ©lectionner&nbsp;â€¢&nbsp;CSV, XLSX</p>
           <input type="file" multiple accept=".csv,.xlsx,.xls" onChange={onInputChange} hidden />
         </label>
 
@@ -225,13 +250,13 @@ export default function UploadPage({ onRefresh, onOpenDashboard }) {
         {files.length > 0 && (
           <p className="mapping-line">
             <IconSync />
-            Vérifier le mapping des colonnes
+            VÃ©rifier le mapping des colonnes
           </p>
         )}
 
         <div className="upload-footer">
           <button type="button" className="ghost-btn download-example-btn" disabled>
-            <IconDownload /> Télécharger un fichier exemple
+            <IconDownload /> TÃ©lÃ©charger un fichier exemple
           </button>
           <button
             type="button"
@@ -239,10 +264,12 @@ export default function UploadPage({ onRefresh, onOpenDashboard }) {
             disabled={!files.length}
             onClick={runBatch}
           >
-            Commencer l&apos;analyse →
+            Commencer l&apos;analyse â†’
           </button>
         </div>
+        {submitError && <p className="upload-error" role="alert">{submitError}</p>}
       </section>
     </main>
   );
 }
+

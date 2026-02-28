@@ -26,3 +26,7 @@ export function analyzeFile({ companyName, file }) {
 export function getRawRows(analysisId) {
   return fetchJson(`/api/analyses/${analysisId}/raw`);
 }
+
+export function getAnalysisSteps() {
+  return fetchJson("/api/analysis-steps");
+}

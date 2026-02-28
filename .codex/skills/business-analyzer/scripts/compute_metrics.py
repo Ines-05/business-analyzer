@@ -1,32 +1,37 @@
 ﻿"""
-compute_metrics.py - Step 2: Compute KPIs, trends, breakdowns, data-quality profile,
-and strategic recommendations.
+compute_metrics.py - Step 2: Compute KPIs, data quality profile, and
+structural metrics using AI-assigned column roles from chart_plan.json.
+
+No hardcoded column names. All roles (primary_measure, primary_date,
+dimensions, secondary_measures) come from the AI plan produced by
+plan_charts.py.
 
 Usage:
-    python scripts/compute_metrics.py --input /home/claude/parsed_data.json
+    python scripts/compute_metrics.py \
+        --input  /home/claude/parsed_data.json \
+        --plan   /home/claude/chart_plan.json \
+        --output /home/claude/metrics.json
 
 Output:
     /home/claude/metrics.json
-    Schema highlights:
     {
-      "kpis": {...},
-      "revenue_trend": [...],
-      "top_products": [...],
-      "product_share": [...],
-      "by_region": [...],
-      "by_rep": [...],
-      "by_quantity": [...],
-      "by_category": [...],
-      "data_quality": {
-        "summary": {"score": 87.3, "grade": "A", ...},
-        "completeness": {...},
-        "variance": {...},
-        "cardinality": {...},
-        "valid_dates": {...},
-        "outliers": {...}
+      "kpis": {
+        "total_revenue": 120500.0,
+        "total_orders":  340,
+        "avg_order_value": 354.4,
+        "period_growth_pct": 12.3,
+        "top_item": { "name": "Gamma", "revenue": 50000, "share_pct": 41.5 }
       },
-      "recommendations": [...],
-      "meta": {...}
+      "revenue_trend":   [...],   # grouped by primary_date
+      "top_items":       [...],   # ranked by primary_measure
+      "item_share":      [...],   # donut-ready share of top items
+      "dimensions":      {        # one entry per AI-assigned dimension
+        "technicien":  [...],
+        "type_service": [...]
+      },
+      "data_quality":    { "summary": {...}, "completeness": {...}, ... },
+      "roles":           { ... }, # the roles block from chart_plan.json
+      "meta":            { "source_file": "...", "row_count": ..., ... }
     }
 """
 
@@ -38,10 +43,18 @@ from collections import defaultdict
 from statistics import mean, pstdev
 
 
-DATE_MONTH_RE = re.compile(r"^\d{4}-\d{2}$")
-DATE_DAY_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+# ---------------------------------------------------------------------------
+# Constants
+# ---------------------------------------------------------------------------
+
+DATE_MONTH_RE  = re.compile(r"^\d{4}-\d{2}$")
+DATE_DAY_RE    = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 MISSING_STRINGS = {"", "na", "n/a", "none", "null", "nan", "nat"}
 
+
+# ---------------------------------------------------------------------------
+# Utility
+# ---------------------------------------------------------------------------
 
 def load(path: str) -> dict:
     with open(path, encoding="utf-8") as f:
@@ -71,573 +84,421 @@ def round_pct(numerator: float, denominator: float) -> float:
     return round((numerator / denominator) * 100, 1)
 
 
-def compute_kpis(rows: list, col: dict) -> dict:
-    rev_col = col["revenue"]
-    revenues = [as_float(r.get(rev_col)) for r in rows]
-    revenues = [v for v in revenues if v is not None]
+# ---------------------------------------------------------------------------
+# Role resolution
+# ---------------------------------------------------------------------------
 
-    total_revenue = sum(revenues)
-    total_orders = len(revenues)
-    avg_order_value = total_revenue / total_orders if total_orders else 0
-
+def resolve_roles(plan: dict) -> dict:
+    """
+    Extract column roles from chart_plan.json.
+    Returns a normalized roles dict with safe defaults.
+    """
+    roles = plan.get("roles", {})
     return {
-        "total_revenue": round(total_revenue, 2),
-        "total_orders": total_orders,
-        "avg_order_value": round(avg_order_value, 2),
+        "primary_measure":    roles.get("primary_measure"),
+        "primary_date":       roles.get("primary_date"),
+        "dimensions":         roles.get("dimensions", []),
+        "secondary_measures": roles.get("secondary_measures", []),
+        "ignore":             roles.get("ignore", []),
     }
 
 
-def compute_trend(rows: list, col: dict) -> list:
-    """Group revenue by parsed period string (month or day)."""
-    date_col = col.get("date")
-    rev_col = col["revenue"]
-    if not date_col:
+# ---------------------------------------------------------------------------
+# KPI computation
+# ---------------------------------------------------------------------------
+
+def compute_kpis(rows: list, measure_col: str) -> dict:
+    values = [as_float(r.get(measure_col)) for r in rows]
+    values = [v for v in values if v is not None]
+
+    total     = sum(values)
+    count     = len(values)
+    avg_value = total / count if count else 0.0
+
+    return {
+        "total_revenue":    round(total, 2),
+        "total_orders":     count,
+        "avg_order_value":  round(avg_value, 2),
+    }
+
+
+def compute_trend(rows: list, date_col: str, measure_col: str) -> list:
+    """Group measure by date period (day or month)."""
+    if not date_col or not measure_col:
         return []
 
-    by_period = defaultdict(float)
+    by_period: dict[str, float] = defaultdict(float)
     for row in rows:
-        period = row.get(date_col)
-        revenue = as_float(row.get(rev_col))
-        if is_missing(period) or revenue is None:
+        period  = row.get(date_col)
+        value   = as_float(row.get(measure_col))
+        if is_missing(period) or value is None:
             continue
-        by_period[str(period)] += revenue
+        by_period[str(period)] += value
 
     return sorted(
-        [{"period": period, "revenue": round(value, 2)} for period, value in by_period.items()],
+        [{"period": p, "revenue": round(v, 2)} for p, v in by_period.items()],
         key=lambda item: item["period"],
     )
 
 
 def compute_period_growth(trend: list) -> float:
-    """Compare latest period against previous period."""
+    """% change between last two periods."""
     if len(trend) < 2:
         return 0.0
-    previous = trend[-2]["revenue"]
-    current = trend[-1]["revenue"]
-    if previous == 0:
+    prev = trend[-2]["revenue"]
+    curr = trend[-1]["revenue"]
+    if prev == 0:
         return 0.0
-    return round(((current - previous) / previous) * 100, 1)
+    return round(((curr - prev) / prev) * 100, 1)
 
 
-def aggregate_revenue(rows: list, rev_col: str, dim_col: str, dim_key: str, limit: int = None) -> list:
-    if not dim_col:
+def compute_top_items(rows: list, measure_col: str, dim_col: str, n: int = 10) -> list:
+    """Rank items in dim_col by sum of measure_col."""
+    if not dim_col or not measure_col:
         return []
 
-    totals = defaultdict(float)
+    by_item: dict[str, float] = defaultdict(float)
     for row in rows:
-        revenue = as_float(row.get(rev_col))
-        dimension = row.get(dim_col)
-        if revenue is None or is_missing(dimension):
+        item  = row.get(dim_col)
+        value = as_float(row.get(measure_col))
+        if value is None:
             continue
-        totals[str(dimension).strip()] += revenue
+        key = str(item).strip() if not is_missing(item) else "Unknown"
+        by_item[key] += value
 
-    if not totals:
+    if not by_item:
         return []
 
-    sorted_items = sorted(totals.items(), key=lambda item: item[1], reverse=True)
-    if limit:
-        sorted_items = sorted_items[:limit]
-
-    grand_total = sum(value for _, value in sorted_items) or 1.0
-    result = []
-    for label, value in sorted_items:
-        result.append(
-            {
-                dim_key: label,
-                "revenue": round(value, 2),
-                "share_pct": round((value / grand_total) * 100, 1),
-            }
-        )
-    return result
-
-
-def compute_top_products(rows: list, col: dict, n: int = 10) -> list:
-    product_col = col.get("product") or col.get("category")
-    rev_col = col["revenue"]
-    if not product_col:
-        return []
-
-    by_product = defaultdict(float)
-    for row in rows:
-        product = row.get(product_col)
-        revenue = as_float(row.get(rev_col))
-        if revenue is None:
-            continue
-        key = str(product).strip() if not is_missing(product) else "Unknown"
-        by_product[key] += revenue
-
-    if not by_product:
-        return []
-
-    total = sum(by_product.values()) or 1.0
-    top = sorted(by_product.items(), key=lambda item: item[1], reverse=True)[:n]
+    total = sum(by_item.values()) or 1.0
+    top   = sorted(by_item.items(), key=lambda x: x[1], reverse=True)[:n]
     return [
         {
-            "product": name,
-            "revenue": round(value, 2),
+            "name":      name,
+            "revenue":   round(value, 2),
             "share_pct": round((value / total) * 100, 1),
         }
         for name, value in top
     ]
 
 
-def compute_product_share(top_products: list, max_slices: int = 6) -> list:
-    """Collapse tail products into 'Other' for donut charts."""
-    if not top_products:
+def compute_item_share(top_items: list, max_slices: int = 6) -> list:
+    """Collapse tail items into 'Other' for donut chart."""
+    if not top_items:
         return []
 
-    slices = top_products[:max_slices]
-    tail_revenue = sum(item["revenue"] for item in top_products[max_slices:])
-    total_revenue = sum(item["revenue"] for item in top_products) or 1.0
+    slices       = top_items[:max_slices]
+    tail_revenue = sum(i["revenue"] for i in top_items[max_slices:])
+    total        = sum(i["revenue"] for i in top_items) or 1.0
 
-    share = [{"name": item["product"], "value": item["share_pct"]} for item in slices]
+    share = [{"name": i["name"], "value": i["share_pct"]} for i in slices]
     if tail_revenue > 0:
-        share.append({"name": "Other", "value": round((tail_revenue / total_revenue) * 100, 1)})
+        share.append({"name": "Other", "value": round((tail_revenue / total) * 100, 1)})
     return share
 
 
-def compute_quantity_by_product(rows: list, col: dict, n: int = 12) -> list:
-    qty_col = col.get("quantity")
-    product_col = col.get("product") or col.get("category")
-    if not qty_col or not product_col:
+def aggregate_by_dimension(rows: list, measure_col: str, dim_col: str, limit: int = 25) -> list:
+    """Sum measure by a single dimension column."""
+    if not dim_col or not measure_col:
         return []
 
-    by_product = defaultdict(float)
+    totals: dict[str, float] = defaultdict(float)
     for row in rows:
-        quantity = as_float(row.get(qty_col))
-        product = row.get(product_col)
-        if quantity is None:
+        value = as_float(row.get(measure_col))
+        label = row.get(dim_col)
+        if value is None or is_missing(label):
             continue
-        key = str(product).strip() if not is_missing(product) else "Unknown"
-        by_product[key] += quantity
+        totals[str(label).strip()] += value
 
-    ranked = sorted(by_product.items(), key=lambda item: item[1], reverse=True)[:n]
-    return [{"product": key, "quantity": round(value, 2)} for key, value in ranked]
+    if not totals:
+        return []
 
+    sorted_items = sorted(totals.items(), key=lambda x: x[1], reverse=True)[:limit]
+    grand_total  = sum(v for _, v in sorted_items) or 1.0
 
-def profile_completeness(rows: list, col: dict) -> dict:
-    total_rows = len(rows)
-    profile = {}
-
-    for role, column in col.items():
-        if not column:
-            continue
-        non_null = sum(0 if is_missing(row.get(column)) else 1 for row in rows)
-        profile[role] = {
-            "column": column,
-            "non_null": non_null,
-            "total": total_rows,
-            "pct": round_pct(non_null, total_rows),
+    return [
+        {
+            "label":     label,
+            "dimension": dim_col,
+            "revenue":   round(value, 2),
+            "share_pct": round((value / grand_total) * 100, 1),
         }
+        for label, value in sorted_items
+    ]
 
-    return profile
 
-
-def profile_cardinality(rows: list, col: dict) -> dict:
-    roles = ["date", "product", "category", "region", "rep"]
-    profile = {}
-
-    for role in roles:
-        column = col.get(role)
-        if not column:
-            continue
-
-        values = [str(row.get(column)).strip() for row in rows if not is_missing(row.get(column))]
-        unique_values = set(values)
-        non_null_count = len(values)
-
-        profile[role] = {
-            "column": column,
-            "unique": len(unique_values),
-            "non_null": non_null_count,
-            "unique_ratio_pct": round_pct(len(unique_values), non_null_count),
-        }
-
-    return profile
-
+# ---------------------------------------------------------------------------
+# Data quality profile
+# ---------------------------------------------------------------------------
 
 def variance_stats(values: list) -> dict:
-    if not values:
-        return {"count": 0, "mean": 0.0, "std": 0.0, "cv": 0.0}
-
-    avg = mean(values)
-    std_dev = pstdev(values) if len(values) > 1 else 0.0
-    coeff_var = abs(std_dev / avg) if avg else 0.0
+    if len(values) < 2:
+        return {"mean": 0.0, "std": 0.0, "cv": 0.0}
+    m  = mean(values)
+    sd = pstdev(values)
     return {
-        "count": len(values),
-        "mean": round(avg, 4),
-        "std": round(std_dev, 4),
-        "cv": round(coeff_var, 4),
+        "mean": round(m, 4),
+        "std":  round(sd, 4),
+        "cv":   round(sd / m, 4) if m else 0.0,
     }
-
-
-def quantile(values: list, q: float) -> float:
-    if not values:
-        return 0.0
-    if len(values) == 1:
-        return float(values[0])
-
-    sorted_values = sorted(values)
-    index = (len(sorted_values) - 1) * q
-    lower = math.floor(index)
-    upper = math.ceil(index)
-    if lower == upper:
-        return float(sorted_values[int(index)])
-    lower_value = sorted_values[lower]
-    upper_value = sorted_values[upper]
-    return float(lower_value + (upper_value - lower_value) * (index - lower))
 
 
 def outlier_stats(values: list) -> dict:
     if len(values) < 4:
-        return {
-            "method": "iqr",
-            "count": 0,
-            "pct": 0.0,
-            "lower_bound": None,
-            "upper_bound": None,
-        }
-
-    q1 = quantile(values, 0.25)
-    q3 = quantile(values, 0.75)
-    iqr = q3 - q1
-    lower = q1 - (1.5 * iqr)
-    upper = q3 + (1.5 * iqr)
-
-    count = sum(1 for value in values if value < lower or value > upper)
+        return {"count": 0, "pct": 0.0}
+    m    = mean(values)
+    sd   = pstdev(values)
+    if sd == 0:
+        return {"count": 0, "pct": 0.0}
+    outs = sum(1 for v in values if abs(v - m) > 3 * sd)
     return {
-        "method": "iqr",
-        "count": count,
-        "pct": round_pct(count, len(values)),
-        "lower_bound": round(lower, 4),
-        "upper_bound": round(upper, 4),
+        "count": outs,
+        "pct":   round((outs / len(values)) * 100, 1),
     }
 
 
-def profile_valid_dates(rows: list, col: dict, parsed_date_stats: dict = None) -> dict:
-    date_col = col.get("date")
-    if not date_col:
-        return {
-            "present": False,
-            "valid": 0,
-            "invalid": 0,
-            "pct_valid": None,
-            "granularity": "none",
-        }
+def profile_completeness(rows: list, roles: dict) -> dict:
+    total = len(rows)
+    result = {}
+    cols_to_check = {}
 
-    day_count = 0
-    month_count = 0
-    invalid_count = 0
+    if roles.get("primary_measure"):
+        cols_to_check["primary_measure"] = roles["primary_measure"]
+    if roles.get("primary_date"):
+        cols_to_check["primary_date"] = roles["primary_date"]
+    for dim in roles.get("dimensions", []):
+        cols_to_check[f"dim_{dim}"] = dim
+
+    for role, col in cols_to_check.items():
+        non_null = sum(0 if is_missing(row.get(col)) else 1 for row in rows)
+        result[role] = {
+            "column":   col,
+            "non_null": non_null,
+            "total":    total,
+            "pct":      round_pct(non_null, total),
+        }
+    return result
+
+
+def profile_valid_dates(rows: list, date_col: str) -> dict:
+    if not date_col:
+        return {"present": False}
+
+    total   = len(rows)
+    valid   = 0
+    granularity = "unknown"
 
     for row in rows:
-        value = row.get(date_col)
-        if is_missing(value):
-            invalid_count += 1
+        v = row.get(date_col)
+        if is_missing(v):
             continue
-
-        string_value = str(value).strip()
-        if DATE_DAY_RE.match(string_value):
-            day_count += 1
-        elif DATE_MONTH_RE.match(string_value):
-            month_count += 1
-        else:
-            invalid_count += 1
-
-    valid_count = day_count + month_count
-    granularity = "unknown"
-    if day_count and month_count:
-        granularity = "mixed"
-    elif day_count:
-        granularity = "day"
-    elif month_count:
-        granularity = "month"
-
-    if parsed_date_stats and parsed_date_stats.get("granularity") in {"day", "month"}:
-        if granularity == "unknown":
-            granularity = parsed_date_stats["granularity"]
+        s = str(v)
+        if DATE_DAY_RE.match(s):
+            valid += 1
+            granularity = "day"
+        elif DATE_MONTH_RE.match(s):
+            valid += 1
+            if granularity != "day":
+                granularity = "month"
 
     return {
-        "present": True,
-        "valid": valid_count,
-        "invalid": invalid_count,
-        "pct_valid": round_pct(valid_count, valid_count + invalid_count),
+        "present":     True,
+        "column":      date_col,
+        "valid_count": valid,
+        "total":       total,
+        "pct_valid":   round_pct(valid, total),
         "granularity": granularity,
     }
 
 
 def quality_grade(score: float) -> str:
-    if score >= 85:
-        return "A"
-    if score >= 70:
-        return "B"
-    if score >= 55:
-        return "C"
-    if score >= 40:
-        return "D"
+    if score >= 85: return "A"
+    if score >= 70: return "B"
+    if score >= 55: return "C"
+    if score >= 40: return "D"
     return "E"
 
 
-def derive_quality_summary(
-    row_count: int,
-    completeness: dict,
-    valid_dates: dict,
-    variance: dict,
-    outliers: dict,
-) -> dict:
-    completeness_values = [stats["pct"] for stats in completeness.values()]
-    completeness_score = sum(completeness_values) / len(completeness_values) if completeness_values else 0.0
+def build_data_quality_profile(rows: list, roles: dict) -> dict:
+    measure_col = roles.get("primary_measure")
+    date_col    = roles.get("primary_date")
 
-    date_score = 100.0
-    if valid_dates.get("present"):
-        date_score = float(valid_dates.get("pct_valid") or 0.0)
+    measure_values = []
+    if measure_col:
+        measure_values = [v for v in (as_float(r.get(measure_col)) for r in rows) if v is not None]
 
-    row_score = min(100.0, (row_count / 200.0) * 100.0)
+    completeness = profile_completeness(rows, roles)
+    valid_dates  = profile_valid_dates(rows, date_col)
 
-    revenue_cv = float(variance.get("revenue", {}).get("cv") or 0.0)
-    variance_score = min(100.0, revenue_cv * 400.0)
+    variance = {}
+    outliers = {}
+    if measure_values:
+        variance["primary_measure"] = variance_stats(measure_values)
+        outliers["primary_measure"] = outlier_stats(measure_values)
 
-    revenue_outlier_pct = float(outliers.get("revenue", {}).get("pct") or 0.0)
-    outlier_score = max(0.0, 100.0 - (revenue_outlier_pct * 2.5))
+    # Component scores
+    completeness_values = [s["pct"] for s in completeness.values()]
+    completeness_score  = (sum(completeness_values) / len(completeness_values)
+                           if completeness_values else 0.0)
+
+    date_score = (float(valid_dates.get("pct_valid", 0.0))
+                  if valid_dates.get("present") else 100.0)
+
+    row_score      = min(100.0, (len(rows) / 200.0) * 100.0)
+    measure_cv     = float(variance.get("primary_measure", {}).get("cv", 0.0))
+    variance_score = min(100.0, measure_cv * 400.0)
+    outlier_pct    = float(outliers.get("primary_measure", {}).get("pct", 0.0))
+    outlier_score  = max(0.0, 100.0 - (outlier_pct * 2.5))
 
     component_scores = {
         "completeness": round(completeness_score, 1),
-        "valid_dates": round(date_score, 1),
-        "row_volume": round(row_score, 1),
-        "variance": round(variance_score, 1),
-        "outliers": round(outlier_score, 1),
+        "valid_dates":  round(date_score, 1),
+        "row_volume":   round(row_score, 1),
+        "variance":     round(variance_score, 1),
+        "outliers":     round(outlier_score, 1),
     }
 
-    weighted_score = (
+    weighted = (
         component_scores["completeness"] * 0.40
         + component_scores["valid_dates"] * 0.20
-        + component_scores["row_volume"] * 0.15
-        + component_scores["variance"] * 0.10
-        + component_scores["outliers"] * 0.15
+        + component_scores["row_volume"]  * 0.15
+        + component_scores["variance"]    * 0.10
+        + component_scores["outliers"]    * 0.15
     )
 
     notes = []
     if component_scores["completeness"] < 90:
         notes.append("Some key columns have missing values.")
     if valid_dates.get("present") and component_scores["valid_dates"] < 90:
-        notes.append("Date validity is low; time-based charts may be reduced.")
-    if revenue_outlier_pct > 10:
-        notes.append("Revenue contains many outliers that can distort chart readability.")
-    if revenue_cv < 0.03:
-        notes.append("Revenue variance is very low; some trend charts may add little insight.")
+        notes.append("Date validity is low; time-based charts may be incomplete.")
+    if outlier_pct > 10:
+        notes.append("Primary measure contains many outliers that may distort charts.")
+    if measure_cv < 0.03:
+        notes.append("Primary measure has very low variance; trend charts may add little insight.")
 
-    score = round(weighted_score, 1)
-    return {
-        "score": score,
-        "grade": quality_grade(score),
+    summary = {
+        "score":            round(weighted, 1),
+        "grade":            quality_grade(weighted),
         "component_scores": component_scores,
-        "notes": notes,
+        "notes":            notes,
     }
-
-
-def build_data_quality_profile(rows: list, col: dict, parsed_date_stats: dict = None) -> dict:
-    rev_col = col["revenue"]
-    qty_col = col.get("quantity")
-
-    revenue_values = [as_float(row.get(rev_col)) for row in rows]
-    revenue_values = [value for value in revenue_values if value is not None]
-
-    quantity_values = []
-    if qty_col:
-        quantity_values = [as_float(row.get(qty_col)) for row in rows]
-        quantity_values = [value for value in quantity_values if value is not None]
-
-    completeness = profile_completeness(rows, col)
-    cardinality = profile_cardinality(rows, col)
-    variance = {
-        "revenue": variance_stats(revenue_values),
-    }
-    if qty_col:
-        variance["quantity"] = variance_stats(quantity_values)
-
-    outliers = {
-        "revenue": outlier_stats(revenue_values),
-    }
-    if qty_col and quantity_values:
-        outliers["quantity"] = outlier_stats(quantity_values)
-
-    valid_dates = profile_valid_dates(rows, col, parsed_date_stats)
-    summary = derive_quality_summary(len(rows), completeness, valid_dates, variance, outliers)
 
     return {
-        "summary": summary,
+        "summary":      summary,
         "completeness": completeness,
-        "variance": variance,
-        "cardinality": cardinality,
-        "valid_dates": valid_dates,
-        "outliers": outliers,
+        "variance":     variance,
+        "outliers":     outliers,
+        "valid_dates":  valid_dates,
     }
 
 
-def generate_recommendations(kpis: dict, trend: list, top_products: list, data_quality: dict) -> list:
-    """Generate 3-5 data-specific strategic recommendations."""
-    recommendations = []
-
-    if top_products:
-        top = top_products[0]
-        if top["share_pct"] > 50:
-            recommendations.append(
-                {
-                    "priority": "High",
-                    "icon": "alert",
-                    "title": "Revenue concentration risk",
-                    "insight": (
-                        f"{top['product']} accounts for {top['share_pct']}% of total revenue "
-                        f"(${top['revenue']:,.0f}). This concentration increases downside risk."
-                    ),
-                    "action": (
-                        f"Grow the next 2-3 products to reduce dependence on {top['product']}. "
-                        "Target less than 40% share for any single product within 2 quarters."
-                    ),
-                }
-            )
-
-    if trend:
-        growth = compute_period_growth(trend)
-        latest = trend[-1]
-        if growth < -5:
-            recommendations.append(
-                {
-                    "priority": "High",
-                    "icon": "alert",
-                    "title": f"Revenue declined {abs(growth)}% in {latest['period']}",
-                    "insight": (
-                        f"Revenue dropped from ${trend[-2]['revenue']:,.0f} to ${latest['revenue']:,.0f} "
-                        f"({growth}% period-over-period)."
-                    ),
-                    "action": "Run a pipeline review to isolate whether the decline is product, region, or rep-driven.",
-                }
-            )
-        elif growth > 10:
-            recommendations.append(
-                {
-                    "priority": "Low",
-                    "icon": "idea",
-                    "title": f"Strong momentum: +{growth}% in {latest['period']}",
-                    "insight": (
-                        f"Revenue grew from ${trend[-2]['revenue']:,.0f} to ${latest['revenue']:,.0f}. "
-                        "Capture the drivers while momentum is strong."
-                    ),
-                    "action": "Document winning campaigns and replicate across the next sales cycle.",
-                }
-            )
-
-    if len(top_products) >= 5:
-        tail = top_products[-1]
-        if tail["share_pct"] < 2:
-            recommendations.append(
-                {
-                    "priority": "Medium",
-                    "icon": "warning",
-                    "title": f"Low-performing SKU: {tail['product']}",
-                    "insight": (
-                        f"{tail['product']} contributes only {tail['share_pct']}% of revenue "
-                        f"(${tail['revenue']:,.0f})."
-                    ),
-                    "action": "Review margin, pricing, and packaging strategy for this SKU.",
-                }
-            )
-
-    aov = kpis.get("avg_order_value", 0)
-    if aov > 0:
-        recommendations.append(
-            {
-                "priority": "Medium",
-                "icon": "warning",
-                "title": f"Average order value opportunity (${aov:,.0f})",
-                "insight": "AOV can likely be improved through bundling and structured upsell plays.",
-                "action": "Deploy bundles or tiered pricing and monitor AOV weekly.",
-            }
-        )
-
-    quality_notes = data_quality.get("summary", {}).get("notes", [])
-    if quality_notes:
-        recommendations.append(
-            {
-                "priority": "Low",
-                "icon": "idea",
-                "title": "Improve data quality to unlock better insights",
-                "insight": quality_notes[0],
-                "action": "Tighten source validation rules for mandatory fields before export.",
-            }
-        )
-
-    if len(recommendations) < 3:
-        recommendations.append(
-            {
-                "priority": "Low",
-                "icon": "idea",
-                "title": "Expand tracking granularity",
-                "insight": "Region, rep, and category coverage is required for deeper diagnostic analysis.",
-                "action": "Include region, sales rep, and category in future exports.",
-            }
-        )
-
-    return recommendations[:5]
-
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--input", default="/home/claude/parsed_data.json")
+    parser = argparse.ArgumentParser(
+        description="Compute KPIs and data quality profile using AI-assigned column roles."
+    )
+    parser.add_argument("--input",  default="/home/claude/parsed_data.json")
+    parser.add_argument("--plan",   default="/home/claude/chart_plan.json",
+                        help="chart_plan.json from plan_charts.py (provides column roles)")
     parser.add_argument("--output", default="/home/claude/metrics.json")
     args = parser.parse_args()
 
+    # ── Load inputs ──────────────────────────────────────────────────────────
+    print(f"[compute_metrics] Loading data: {args.input}")
     data = load(args.input)
-    rows = data["rows"]
-    col = data["columns"]
+    rows = data.get("rows", [])
 
+    print(f"[compute_metrics] Loading plan: {args.plan}")
+    plan  = load(args.plan)
+    roles = resolve_roles(plan)
+
+    measure_col = roles["primary_measure"]
+    date_col    = roles["primary_date"]
+    dimensions  = roles["dimensions"]
+
+    print(f"[compute_metrics] Roles resolved:")
+    print(f"  primary_measure    : {measure_col}")
+    print(f"  primary_date       : {date_col}")
+    print(f"  dimensions         : {dimensions}")
+    print(f"  secondary_measures : {roles['secondary_measures']}")
+    print(f"  ignore             : {roles['ignore']}")
     print(f"[compute_metrics] Processing {len(rows)} rows...")
 
-    kpis = compute_kpis(rows, col)
-    trend = compute_trend(rows, col)
+    if not measure_col:
+        print("[compute_metrics] WARNING: No primary_measure found. KPIs will be empty.")
+
+    # ── KPIs ─────────────────────────────────────────────────────────────────
+    kpis = compute_kpis(rows, measure_col) if measure_col else {
+        "total_revenue": 0.0, "total_orders": 0, "avg_order_value": 0.0
+    }
+
+    # ── Trend ─────────────────────────────────────────────────────────────────
+    trend = compute_trend(rows, date_col, measure_col) if measure_col else []
     kpis["period_growth_pct"] = compute_period_growth(trend)
 
-    top_products = compute_top_products(rows, col)
-    if top_products:
-        kpis["top_product"] = top_products[0]
+    # ── Top items (use first dimension as the "product" equivalent) ───────────
+    primary_dim = dimensions[0] if dimensions else None
+    top_items   = compute_top_items(rows, measure_col, primary_dim) if measure_col else []
+    item_share  = compute_item_share(top_items)
 
-    product_share = compute_product_share(top_products)
+    if top_items:
+        kpis["top_item"] = top_items[0]
 
-    by_region = aggregate_revenue(rows, col["revenue"], col.get("region"), "region")
-    by_rep = aggregate_revenue(rows, col["revenue"], col.get("rep"), "rep", limit=25)
-    by_category = aggregate_revenue(rows, col["revenue"], col.get("category"), "category")
-    by_quantity = compute_quantity_by_product(rows, col)
+    # ── Dimension breakdowns (one per AI-assigned dimension) ──────────────────
+    dim_breakdowns = {}
+    for dim in dimensions:
+        breakdown = aggregate_by_dimension(rows, measure_col, dim)
+        if breakdown:
+            dim_breakdowns[dim] = breakdown
 
-    data_quality = build_data_quality_profile(rows, col, data.get("date_stats"))
-    recommendations = generate_recommendations(kpis, trend, top_products, data_quality)
+    # ── Data quality profile ──────────────────────────────────────────────────
+    data_quality = build_data_quality_profile(rows, roles)
 
+    # ── Date range metadata ───────────────────────────────────────────────────
+    date_range  = {"min": None, "max": None}
+    date_values = []
+    if date_col:
+        date_values = [str(r.get(date_col)) for r in rows
+                       if not is_missing(r.get(date_col))]
+        if date_values:
+            date_range = {"min": min(date_values), "max": max(date_values)}
+
+    # ── Build output ──────────────────────────────────────────────────────────
     output = {
-        "kpis": kpis,
+        "kpis":          kpis,
         "revenue_trend": trend,
-        "top_products": top_products,
-        "product_share": product_share,
-        "by_region": by_region,
-        "by_rep": by_rep,
-        "by_quantity": by_quantity,
-        "by_category": by_category,
-        "data_quality": data_quality,
-        "recommendations": recommendations,
+        "top_items":     top_items,
+        "item_share":    item_share,
+        "dimensions":    dim_breakdowns,
+        "data_quality":  data_quality,
+        "roles":         roles,
         "meta": {
-            "date_range": data.get("date_range", {}),
-            "date_stats": data.get("date_stats", {}),
-            "source_file": data.get("source_file", ""),
-            "row_count": data.get("row_count", len(rows)),
+            "source_file":  data.get("source_file", ""),
+            "row_count":    data.get("row_count", len(rows)),
+            "date_range":   date_range,
+            "plan_source":  plan.get("plan_source", "unknown"),
+            "model_used":   plan.get("model_used"),
         },
     }
 
     with open(args.output, "w", encoding="utf-8") as f:
-        json.dump(output, f, indent=2)
+        json.dump(output, f, indent=2, default=str)
 
-    print(f"[compute_metrics] Done. Metrics written to {args.output}")
-    print(f"  Total revenue:  ${kpis['total_revenue']:,.2f}")
-    print(f"  Total orders:   {kpis['total_orders']:,}")
-    print(f"  Period growth:  {kpis['period_growth_pct']}%")
-    print(f"  Data quality:   {data_quality['summary']['score']} ({data_quality['summary']['grade']})")
-    print(f"  Recommendations: {len(recommendations)}")
+    # ── Summary log ──────────────────────────────────────────────────────────
+    print(f"\n[compute_metrics] Done → {args.output}")
+    print(f"  Total measure   : {kpis['total_revenue']:,.2f}")
+    print(f"  Total orders    : {kpis['total_orders']:,}")
+    print(f"  Avg order value : {kpis['avg_order_value']:,.2f}")
+    print(f"  Period growth   : {kpis['period_growth_pct']}%")
+    print(f"  Trend periods   : {len(trend)}")
+    print(f"  Top items       : {len(top_items)}")
+    print(f"  Dimensions computed: {list(dim_breakdowns.keys())}")
+    print(f"  Data quality    : {data_quality['summary']['score']} ({data_quality['summary']['grade']})")
+    if data_quality["summary"]["notes"]:
+        for note in data_quality["summary"]["notes"]:
+            print(f"    ⚠ {note}")
 
 
 if __name__ == "__main__":

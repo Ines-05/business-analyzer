@@ -37,14 +37,19 @@ function applyFilters(rows, { region, category, rep }, exclude = null) {
   return rows.filter((r) => {
     if (exclude !== "region"   && region   && r.region    !== region)   return false;
     if (exclude !== "category" && category && r.category  !== category) return false;
-    if (exclude !== "rep"      && rep      && r.sales_rep !== rep)      return false;
+    if (exclude !== "rep"      && rep      && (r.sales_rep ?? r.rep) !== rep) return false;
     return true;
   });
 }
 
 function aggTrend(rows) {
   const map = {};
-  for (const r of rows) map[r.order_date] = (map[r.order_date] || 0) + r.revenue;
+  for (const r of rows) {
+    const period = r.order_date ?? r.date ?? r.period;
+    const revenue = Number(r.revenue || 0);
+    if (!period) continue;
+    map[period] = (map[period] || 0) + revenue;
+  }
   return Object.entries(map)
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([period, revenue]) => ({ period, revenue }));
@@ -52,7 +57,12 @@ function aggTrend(rows) {
 
 function aggProducts(rows) {
   const map = {};
-  for (const r of rows) map[r.product] = (map[r.product] || 0) + r.revenue;
+  for (const r of rows) {
+    const product = r.product ?? r.name;
+    const revenue = Number(r.revenue || 0);
+    if (!product) continue;
+    map[product] = (map[product] || 0) + revenue;
+  }
   return Object.entries(map)
     .sort(([, a], [, b]) => b - a)
     .map(([product, revenue]) => ({ product, revenue }));
@@ -61,7 +71,13 @@ function aggProducts(rows) {
 function aggShare(rows) {
   const map = {};
   let total = 0;
-  for (const r of rows) { map[r.product] = (map[r.product] || 0) + r.revenue; total += r.revenue; }
+  for (const r of rows) {
+    const product = r.product ?? r.name;
+    const revenue = Number(r.revenue || 0);
+    if (!product) continue;
+    map[product] = (map[product] || 0) + revenue;
+    total += revenue;
+  }
   if (!total) return [];
   return Object.entries(map)
     .sort(([, a], [, b]) => b - a)
@@ -73,11 +89,18 @@ function aggDim(rows, field, valueKey = "revenue") {
   for (const r of rows) {
     const key = r[field];
     if (!key) continue;
-    map[key] = (map[key] || 0) + (valueKey === "quantity" ? Number(r.quantity || 0) : r.revenue);
+    map[key] = (map[key] || 0) + (valueKey === "quantity" ? Number(r.quantity || 0) : Number(r.revenue || 0));
   }
   return Object.entries(map)
     .sort(([, a], [, b]) => b - a)
     .map(([k, v]) => ({ [field]: k, [valueKey]: v }));
+}
+
+function mapDimRows(rows, keyName) {
+  return (rows || []).map((r) => ({
+    [keyName]: r[keyName] ?? r.label ?? r.name,
+    revenue: Number(r.revenue || 0),
+  })).filter((r) => r[keyName]);
 }
 
 // 
@@ -171,37 +194,62 @@ export default function DashboardPage({ onOpenReport, onGoUpload }) {
   const kpiDisp = data.kpi_display || {};
   const meta    = data.meta    || {};
   const trend0     = data.revenue_trend || [];
-  const products0  = data.top_products  || [];
-  const share0     = data.product_share || [];
-  const regions0   = data.by_region     || [];
-  const categories0= data.by_category   || [];
-  const reps0      = data.by_rep        || [];
-  const quantities0= data.by_quantity   || [];
+  const products0  = (data.top_products || data.top_items || []).map((p) => ({
+    product: p.product ?? p.name,
+    revenue: Number(p.revenue || 0),
+  })).filter((p) => p.product);
+  const share0     = data.product_share || data.item_share || [];
+  const dims0      = data.dimensions || {};
+  const regions0   = mapDimRows(data.by_region || dims0.region || [], "region");
+  const categories0= mapDimRows(data.by_category || dims0.category || [], "category");
+  const reps0      = mapDimRows(data.by_rep || dims0.sales_rep || dims0.rep || [], "rep");
+  const quantities0= (data.by_quantity || []).map((q) => ({
+    product: q.product ?? q.label ?? q.name,
+    quantity: Number(q.quantity || 0),
+  })).filter((q) => q.product);
 
   //  Live filtered chart data 
-  const fTrend     = hasRaw ? aggTrend(filteredAll)    : trend0;
-  const fProducts  = hasRaw ? aggProducts(filteredAll) : products0;
-  const fShare     = hasRaw ? aggShare(filteredAll)    : share0;
-
-  const fRegions   = hasRaw
+  const trendRaw = hasRaw ? aggTrend(filteredAll) : [];
+  const productsRaw = hasRaw ? aggProducts(filteredAll) : [];
+  const shareRaw = hasRaw ? aggShare(filteredAll) : [];
+  const regionsRaw = hasRaw
     ? aggDim(filteredForRegion, "region").map((r) => ({ region: r.region, revenue: r.revenue }))
-    : regions0;
-  const fCategories= hasRaw
+    : [];
+  const categoriesRaw = hasRaw
     ? aggDim(filteredForCat, "category").map((r) => ({ category: r.category, revenue: r.revenue }))
-    : categories0;
-  const fReps      = hasRaw
-    ? aggDim(filteredForRep, "sales_rep").map((r) => ({ rep: r.sales_rep, revenue: r.revenue }))
-    : reps0;
-  const fQuantities= hasRaw
+    : [];
+  const repField = hasRaw && rawRows.some((r) => r.sales_rep !== undefined) ? "sales_rep"
+    : hasRaw && rawRows.some((r) => r.rep !== undefined) ? "rep"
+      : null;
+  const repsRaw = hasRaw && repField
+    ? aggDim(filteredForRep, repField).map((r) => ({ rep: r[repField], revenue: r.revenue }))
+    : [];
+  const quantitiesRaw = hasRaw
     ? aggDim(filteredAll, "product", "quantity").map((r) => ({ product: r.product, quantity: r.quantity }))
-    : quantities0;
+    : [];
+
+  const fTrend      = trendRaw.length >= 2 ? trendRaw : trend0;
+  const fProducts   = productsRaw.length >= 2 ? productsRaw : products0;
+  const fShare      = shareRaw.length >= 2 ? shareRaw : share0;
+  const fRegions    = regionsRaw.length >= 2 ? regionsRaw : regions0;
+  const fCategories = categoriesRaw.length >= 2 ? categoriesRaw : categories0;
+  const fReps       = repsRaw.length >= 2 ? repsRaw : reps0;
+  const fQuantities = quantitiesRaw.length >= 2 ? quantitiesRaw : quantities0;
 
   //  KPI cards 
   const kpiCards = [
     { key:"revenue",  label:"Chiffre d'affaires", value: kpiDisp.totalRevenue?.value  || formatCurrency(kpis.total_revenue),  delta: kpiDisp.totalRevenue?.delta, positive: kpiDisp.totalRevenue?.positive ?? true },
     { key:"orders",   label:"Transactions",        value: kpiDisp.totalOrders?.value   || String(kpis.total_orders ?? ""),     delta: null },
     { key:"aov",      label:"Panier moyen",        value: kpiDisp.avgOrderValue?.value || formatCurrency(kpis.avg_order_value), delta: null },
-    { key:"top",      label:"Top produit",         value: kpiDisp.topProduct?.value    || kpis.top_product?.product || "",     delta: kpiDisp.topProduct?.share || (kpis.top_product?.share_pct ? `${kpis.top_product.share_pct.toFixed(1)}% du CA` : null) },
+    {
+      key: "top",
+      label: "Top produit",
+      value: kpiDisp.topProduct?.value || kpiDisp.topItem?.value || kpis.top_product?.product || kpis.top_item?.name || "",
+      delta: kpiDisp.topProduct?.share
+        || kpiDisp.topItem?.share
+        || (kpis.top_product?.share_pct ? `${kpis.top_product.share_pct.toFixed(1)}% du CA` : null)
+        || (kpis.top_item?.share_pct ? `${kpis.top_item.share_pct.toFixed(1)}% du CA` : null),
+    },
     { key:"growth",   label:"Croissance",          value: kpiDisp.periodGrowth?.value  || (kpis.period_growth_pct !== undefined ? formatPct(kpis.period_growth_pct) : ""), delta: null, positive: Number(kpis.period_growth_pct || 0) >= 0 },
   ];
 
